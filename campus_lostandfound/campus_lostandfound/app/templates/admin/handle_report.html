@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}处理举报 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <div class="sidebar">
+        <h3 style="font-size: 16px; font-weight: bold; color: #5D3A1A; margin-bottom: 20px; padding-left: 10px;">管理菜单</h3>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">📊 数据概览</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link">👥 用户管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.items') }}" class="sidebar-link">📦 物品管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link active">🚨 举报处理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.stats') }}" class="sidebar-link">📈 统计图表</a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🚨 处理举报</h2>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">举报ID</label>
+                <div class="form-control" style="background: #FFF8E7;">{{ report.report_id }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">举报时间</label>
+                <div class="form-control" style="background: #FFF8E7;">{{ report.create_time }}</div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div class="form-group">
+                <label class="form-label">被举报物品</label>
+                {% if item %}
+                <div class="form-control" style="background: #FFF8E7;">
+                    <a href="{{ url_for('items.detail', item_id=item.item_id) }}" style="color: #E8792B;">{{ item.item_name }}</a>
+                    <span style="margin-left: 10px;">· {{ item.item_type }}</span>
+                </div>
+                {% else %}
+                <div class="form-control" style="background: #FFF8E7;">物品已删除</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">举报人</label>
+                <div class="form-control" style="background: #FFF8E7;">
+                    {% if reporter %}{{ reporter.nickname or reporter.username }}{% else %}未知用户{% endif %}
+                </div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div class="form-group">
+                <label class="form-label">举报原因</label>
+                <div class="form-control" style="background: #FFF8E7;">{{ report.reason }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">详细说明</label>
+                <div class="form-control" style="background: #FFF8E7; min-height: 60px;">{{ report.detail or '无' }}</div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <form method="POST" action="{{ url_for('admin.handle_report', report_id=report.report_id) }}">
+                <div class="form-group">
+                    <label class="form-label">处理结果 *</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="action" value="approve" required>
+                            <span>✅ 确认违规，下架物品</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="action" value="reject" required>
+                            <span>❌ 举报不成立，驳回</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">处理备注</label>
+                    <textarea name="result" class="form-control" placeholder="请输入处理备注"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary">返回</a>
+                    <button type="submit" class="btn btn-primary">提交处理结果</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
