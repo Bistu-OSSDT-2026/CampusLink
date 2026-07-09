@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}举报 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">🚨 举报信息</h2>
+        </div>
+        
+        <div style="padding: 20px; background: #FFF8E7; border-radius: 12px; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: bold; color: #5D3A1A;">{{ item.item_name }}</h3>
+            <p style="color: #6B6B6B; margin-top: 5px;">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+            <div style="font-size: 12px; color: #999999; margin-top: 10px;">📍 {{ item.location }} · 🕐 {{ item.report_time }}</div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('interaction.report', item_id=item.item_id) }}">
+            <div class="form-group">
+                <label class="form-label">举报原因 *</label>
+                <select name="reason" class="form-control" required>
+                    <option value="">请选择举报原因</option>
+                    <option value="虚假信息">虚假信息</option>
+                    <option value="违规内容">违规内容</option>
+                    <option value="广告骚扰">广告骚扰</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">详细说明</label>
+                <textarea name="detail" class="form-control" placeholder="请详细描述举报原因，以便管理员处理"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 15px;">
+                <a href="{{ url_for('items.detail', item_id=item.item_id) }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-danger">提交举报</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

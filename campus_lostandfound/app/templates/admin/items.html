@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}物品管理 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <div class="sidebar">
+        <h3 style="font-size: 16px; font-weight: bold; color: #5D3A1A; margin-bottom: 20px; padding-left: 10px;">管理菜单</h3>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">📊 数据概览</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link">👥 用户管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.items') }}" class="sidebar-link active">📦 物品管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">🚨 举报处理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.stats') }}" class="sidebar-link">📈 统计图表</a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        {% if unverified_items %}
+        <div class="card" style="background: #FFF8E7;">
+            <div class="card-header">
+                <h2 class="card-title">⚠️ 待审核物品</h2>
+                <span class="badge badge-yellow">{{ unverified_items|length }} 条</span>
+            </div>
+            
+            <table style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left;">
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">物品名称</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">类型</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">发布者</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in unverified_items %}
+                    {% set user = data_service.get_user_by_id(item.user_id) %}
+                    <tr>
+                        <td style="padding: 10px;">{{ item.item_name }}</td>
+                        <td style="padding: 10px;">{{ item.item_type }}</td>
+                        <td style="padding: 10px;">{{ user.nickname or user.username if user else '未知' }}</td>
+                        <td style="padding: 10px;">
+                            <a href="{{ url_for('admin.verify_item', item_id=item.item_id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">通过</a>
+                            <a href="{{ url_for('admin.delete_item', item_id=item.item_id) }}" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">删除</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📦 所有物品</h2>
+                <span class="badge badge-orange">{{ items|length }} 条</span>
+            </div>
+            
+            <table style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left;">
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">物品名称</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">类型</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">状态</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">发布时间</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td style="padding: 10px;">{{ item.item_name }}</td>
+                        <td style="padding: 10px;">{{ item.item_type }}</td>
+                        <td style="padding: 10px;">
+                            <span class="badge {% if item.status == 'found' %}badge-green{% else %}badge-yellow{% endif %}">
+                                {{ '已找到' if item.status == 'found' else '丢失中' }}
+                            </span>
+                        </td>
+                        <td style="padding: 10px;">{{ item.report_time }}</td>
+                        <td style="padding: 10px;">
+                            <a href="{{ url_for('items.detail', item_id=item.item_id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">查看</a>
+                            <a href="{{ url_for('admin.delete_item', item_id=item.item_id) }}" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">下架</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

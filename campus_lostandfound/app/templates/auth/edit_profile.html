@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}修改信息 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">✏️ 修改个人信息</h2>
+        </div>
+        
+        <form method="POST" action="{{ url_for('auth.edit_profile') }}">
+            <div class="form-group">
+                <label class="form-label">昵称</label>
+                <input type="text" name="nickname" class="form-control" placeholder="请输入昵称" value="{{ user.nickname or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">邮箱 *</label>
+                <input type="email" name="email" class="form-control" placeholder="请输入邮箱" value="{{ user.email }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">手机号</label>
+                <input type="tel" name="phone" class="form-control" placeholder="请输入手机号" value="{{ user.phone or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">简介</label>
+                <textarea name="bio" class="form-control" placeholder="请输入个人简介">{{ user.bio or '' }}</textarea>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div style="display: flex; gap: 15px;">
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">保存修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
