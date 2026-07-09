@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}发送私信 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">📩 发送私信</h2>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 15px; padding: 20px; background: #FFF8E7; border-radius: 12px; margin-bottom: 20px;">
+            <div style="width: 60px; height: 60px; background: #FFE4CC; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid #E8792B;">
+                {{ receiver.nickname[:1] if receiver.nickname else receiver.username[:1] }}
+            </div>
+            <div>
+                <h3>{{ receiver.nickname or receiver.username }}</h3>
+                <span class="badge {% if receiver.is_loser() %}badge-orange{% elif receiver.is_finder() %}badge-green{% else %}badge-red{% endif %}">
+                    {% if receiver.is_loser() %}丢失者{% elif receiver.is_finder() %}捡拾者{% else %}管理员{% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('interaction.send_message', user_id=receiver.user_id) }}">
+            <div class="form-group">
+                <label class="form-label">消息内容 *</label>
+                <textarea name="content" class="form-control" placeholder="写下您想发送的消息..." style="min-height: 150px;" required></textarea>
+                <p style="font-size: 12px; color: #999999; margin-top: 5px;">消息内容不能超过1000字</p>
+            </div>
+            
+            <div style="display: flex; gap: 15px;">
+                <a href="{{ url_for('interaction.inbox') }}" class="btn btn-secondary">返回收件箱</a>
+                <button type="submit" class="btn btn-primary">发送消息</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

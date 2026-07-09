@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}收件箱 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📥 收件箱</h2>
+        <span class="badge badge-orange">{{ messages|length }} 条消息</span>
+    </div>
+    
+    {% if messages %}
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+        {% for msg in messages %}
+        <div class="message-item {% if not msg.is_read %}unread{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; background: #FFE4CC; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                        {% if senders.get(msg.sender_id) %}
+                        {{ senders[msg.sender_id].nickname[:1] if senders[msg.sender_id].nickname else senders[msg.sender_id].username[:1] }}
+                        {% else %}
+                        ?
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div style="font-weight: bold; color: #5D3A1A;">
+                            {% if senders.get(msg.sender_id) %}
+                            {{ senders[msg.sender_id].nickname or senders[msg.sender_id].username }}
+                            {% else %}
+                            未知用户
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #999999;">{{ msg.create_time }}</div>
+                    </div>
+                </div>
+                {% if msg.message_type == 'comment' %}
+                <span class="badge badge-green">💬 评论</span>
+                {% elif msg.message_type == 'match' %}
+                <span class="badge badge-orange">🎯 匹配</span>
+                {% endif %}
+            </div>
+            <p style="color: #6B6B6B; line-height: 1.5;">{{ msg.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+        <p style="font-size: 18px; color: #999999;">暂无消息</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
