@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}管理后台 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <div class="sidebar">
+        <h3 style="font-size: 16px; font-weight: bold; color: #5D3A1A; margin-bottom: 20px; padding-left: 10px;">管理菜单</h3>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link active">📊 数据概览</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link">👥 用户管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.items') }}" class="sidebar-link">📦 物品管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">🚨 举报处理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.stats') }}" class="sidebar-link">📈 统计图表</a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📊 数据概览</h2>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div class="stats-card">
+                    <div class="stats-number">{{ stats.total_users }}</div>
+                    <div class="stats-label">总用户数</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number">{{ stats.total_items }}</div>
+                    <div class="stats-label">总物品数</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number">{{ stats.pending_reports }}</div>
+                    <div class="stats-label">待处理举报</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number">{{ stats.lost_items }}</div>
+                    <div class="stats-label">丢失中物品</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">👥 最新用户</h2>
+                </div>
+                <table style="width: 100%;">
+                    <thead>
+                        <tr style="text-align: left;">
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">用户名</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">身份</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">注册时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td style="padding: 10px;">{{ user.nickname or user.username }}</td>
+                            <td style="padding: 10px;">
+                                <span class="badge {% if user.is_loser() %}badge-orange{% elif user.is_finder() %}badge-green{% else %}badge-red{% endif %}">
+                                    {% if user.is_loser() %}丢失者{% elif user.is_finder() %}捡拾者{% else %}管理员{% endif %}
+                                </span>
+                            </td>
+                            <td style="padding: 10px;">{{ user.created_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📦 最新物品</h2>
+                </div>
+                <table style="width: 100%;">
+                    <thead>
+                        <tr style="text-align: left;">
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">物品名称</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">类型</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td style="padding: 10px;">{{ item.item_name }}</td>
+                            <td style="padding: 10px;">{{ item.item_type }}</td>
+                            <td style="padding: 10px;">
+                                <span class="badge {% if item.status == 'found' %}badge-green{% else %}badge-yellow{% endif %}">
+                                    {{ '已找到' if item.status == 'found' else '丢失中' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🚨 待处理举报</h2>
+                {% if reports|selectattr('status', 'equalto', 'pending')|list|length > 0 %}
+                <span class="badge badge-red">{{ reports|selectattr('status', 'equalto', 'pending')|list|length }} 条待处理</span>
+                {% endif %}
+            </div>
+            <table style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left;">
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">物品名称</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">举报原因</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">状态</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td style="padding: 10px;">
+                            {% set item = data_service.get_item_by_id(report.item_id) %}
+                            {{ item.item_name if item else '已删除' }}
+                        </td>
+                        <td style="padding: 10px;">{{ report.reason }}</td>
+                        <td style="padding: 10px;">
+                            <span class="badge {% if report.status == 'pending' %}badge-yellow{% elif report.status == 'approved' %}badge-green{% else %}badge-red{% endif %}">
+                                {% if report.status == 'pending' %}待处理{% elif report.status == 'approved' %}已处理{% else %}已驳回{% endif %}
+                            </span>
+                        </td>
+                        <td style="padding: 10px;">
+                            <a href="{{ url_for('admin.handle_report', report_id=report.report_id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">处理</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

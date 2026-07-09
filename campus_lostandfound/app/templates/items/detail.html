@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.item_name }} - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">{{ item.item_name }}</h2>
+            <div style="display: flex; gap: 10px;">
+                <span class="badge badge-orange">{{ item.item_type }}</span>
+                <span class="badge {% if item.status == 'found' %}badge-green{% else %}badge-yellow{% endif %}">{{ '已找到' if item.status == 'found' else '丢失中' }}</span>
+            </div>
+        </div>
+        
+        {% if item.image_path %}
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.item_name }}" style="max-width: 100%; max-height: 400px; border-radius: 12px;">
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label class="form-label">详细描述</label>
+            <div class="form-control" style="background: #FFF8E7; min-height: 80px;">{{ item.description or '暂无描述' }}</div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label class="form-label">发现/丢失地点</label>
+                <div class="form-control" style="background: #FFF8E7;">📍 {{ item.location }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">发布时间</label>
+                <div class="form-control" style="background: #FFF8E7;">🕐 {{ item.report_time }}</div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label class="form-label">联系人</label>
+                <div class="form-control" style="background: #FFF8E7;">👤 {{ item.contact_name }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">联系电话</label>
+                <div class="form-control" style="background: #FFF8E7;">📞 {{ item.contact_phone or '未填写' }}</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+            {% if current_user and current_user.user_id != item.user_id %}
+            <a href="{{ url_for('interaction.send_message', user_id=item.user_id) }}" class="btn btn-primary">📩 私信联系</a>
+            {% endif %}
+            
+            {% if current_user and (current_user.user_id == item.user_id or current_user.is_admin()) %}
+            {% if item.status == 'lost' %}
+            <a href="{{ url_for('items.mark_found', item_id=item.item_id) }}" class="btn btn-secondary">✅ 标记已找到</a>
+            {% endif %}
+            {% endif %}
+            
+            {% if current_user %}
+            <a href="{{ url_for('interaction.report', item_id=item.item_id) }}" class="btn btn-danger">🚨 举报</a>
+            {% endif %}
+        </div>
+        
+        <div class="separator"></div>
+        
+        <h3 style="font-size: 16px; font-weight: bold; color: #5D3A1A; margin-bottom: 15px;">💬 留言评论</h3>
+        
+        {% if current_user %}
+        <form method="POST" action="{{ url_for('interaction.add_comment', item_id=item.item_id) }}" style="margin-bottom: 20px;">
+            <textarea name="content" class="form-control" placeholder="写下您的留言..." style="margin-bottom: 10px;" required></textarea>
+            <button type="submit" class="btn btn-primary" style="float: right;">发表评论</button>
+        </form>
+        {% else %}
+        <p style="color: #999999; margin-bottom: 20px;">请先登录后发表评论</p>
+        {% endif %}
+        
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="comment-author">
+                    {% set comment_user = data_service.get_user_by_id(comment.user_id) %}
+                    {{ comment_user.nickname or comment_user.username if comment_user else '未知用户' }}
+                </span>
+                <span class="comment-time">{{ comment.create_time }}</span>
+            </div>
+            <p class="comment-content">{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="text-align: center; color: #999999; padding: 30px;">暂无评论，快来发表第一条评论吧！</p>
+        {% endif %}
+    </div>
+    
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🤝 发布者信息</h2>
+            </div>
+            
+            <div style="text-align: center; padding: 20px;">
+                <div style="width: 80px; height: 80px; background: #FFE4CC; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 3px solid #E8792B;">
+                    {{ user.nickname[:1] if user.nickname else user.username[:1] }}
+                </div>
+                <h3 style="margin-top: 15px;">{{ user.nickname or user.username }}</h3>
+                <span class="badge {% if user.is_loser() %}badge-orange{% elif user.is_finder() %}badge-green{% else %}badge-red{% endif %}">
+                    {% if user.is_loser() %}丢失者{% elif user.is_finder() %}捡拾者{% else %}管理员{% endif %}
+                </span>
+            </div>
+            
+            {% if user.bio %}
+            <div class="form-group">
+                <label class="form-label">个人简介</label>
+                <div class="form-control" style="background: #FFF8E7;">{{ user.bio }}</div>
+            </div>
+            {% endif %}
+            
+            {% if current_user and current_user.user_id != user.user_id %}
+            <a href="{{ url_for('interaction.send_message', user_id=user.user_id) }}" class="btn btn-primary" style="width: 100%;">📩 发送私信</a>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🎯 智能匹配推荐</h2>
+            </div>
+            
+            {% if recommend_items %}
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                {% for item in recommend_items %}
+                <a href="{{ url_for('items.detail', item_id=item.item_id) }}" style="text-decoration: none;">
+                    <div style="padding: 10px; background: #FFF8E7; border-radius: 10px; transition: all 0.3s;">
+                        <div style="font-weight: bold; color: #5D3A1A;">{{ item.item_name }}</div>
+                        <div style="font-size: 12px; color: #999999;">{{ item.item_type }} · {{ item.location }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="text-align: center; color: #999999; padding: 30px;">暂无匹配推荐</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
