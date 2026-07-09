@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}校园失物招领平台{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo-section">
+                <div class="logo-icon">🏫</div>
+                <div class="title-info">
+                    <h1>北京信息科技大学</h1>
+                    <p>校园失物招领系统</p>
+                </div>
+            </div>
+            <nav class="nav-bar">
+                <a href="{{ url_for('items.index') }}" class="nav-link {% if request.endpoint == 'items.index' %}active{% endif %}">首页</a>
+                <a href="{{ url_for('items.search') }}" class="nav-link {% if request.endpoint == 'items.search' %}active{% endif %}">搜索</a>
+                <a href="{{ url_for('items.post') }}" class="nav-link {% if request.endpoint == 'items.post' %}active{% endif %}">发布失物</a>
+                
+                {% if current_user %}
+                <div class="user-menu">
+                    <div class="avatar">
+                        {% if current_user.avatar %}
+                        <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="头像" width="36" height="36" style="border-radius: 50%;">
+                        {% else %}
+                        {{ current_user.nickname[:1] if current_user.nickname else current_user.username[:1] }}
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 14px;">{{ current_user.nickname or current_user.username }}</span>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('auth.profile') }}" class="dropdown-item">个人中心</a>
+                        <a href="{{ url_for('auth.edit_profile') }}" class="dropdown-item">修改信息</a>
+                        {% if current_user.is_admin() %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="dropdown-item">管理后台</a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item">退出登录</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary">登录</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">注册</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 30px 20px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 北京信息科技大学 - 校园失物招领平台</p>
+            <div class="decor-dots" style="margin-top: 10px;">
+                <span class="decor-dot"></span>
+                <span class="decor-dot orange"></span>
+                <span class="decor-dot"></span>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
