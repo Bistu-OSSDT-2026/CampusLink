@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}搜索 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">🔍 搜索失物信息</h2>
+    </div>
+    
+    <form method="GET" action="{{ url_for('items.search') }}" style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <input type="text" name="keyword" class="form-control" placeholder="输入关键词搜索..." value="{{ keyword }}">
+        </div>
+        
+        <div style="width: 150px;">
+            <select name="item_type" class="form-control">
+                <option value="">全部类型</option>
+                <option value="电子产品" {% if item_type == '电子产品' %}selected{% endif %}>电子产品</option>
+                <option value="证件卡类" {% if item_type == '证件卡类' %}selected{% endif %}>证件卡类</option>
+                <option value="衣物配饰" {% if item_type == '衣物配饰' %}selected{% endif %}>衣物配饰</option>
+                <option value="学习用品" {% if item_type == '学习用品' %}selected{% endif %}>学习用品</option>
+                <option value="生活用品" {% if item_type == '生活用品' %}selected{% endif %}>生活用品</option>
+                <option value="其他" {% if item_type == '其他' %}selected{% endif %}>其他</option>
+            </select>
+        </div>
+        
+        <div style="width: 120px;">
+            <select name="status" class="form-control">
+                <option value="">全部状态</option>
+                <option value="lost" {% if status == 'lost' %}selected{% endif %}>丢失中</option>
+                <option value="found" {% if status == 'found' %}selected{% endif %}>已找到</option>
+            </select>
+        </div>
+        
+        <div style="width: 120px;">
+            <select name="sort_by" class="form-control">
+                <option value="time" {% if sort_by == 'time' %}selected{% endif %}>最新发布</option>
+                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>名称排序</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="height: 44px; margin-top: 24px;">搜索</button>
+    </form>
+    
+    <div class="separator"></div>
+    
+    {% if items %}
+    <div class="grid-container">
+        {% for item in items %}
+        <div class="item-card">
+            <div class="item-image">
+                {% if item.image_path %}
+                <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.item_name }}" width="100%" height="200" style="object-fit: cover;">
+                {% else %}
+                📷
+                {% endif %}
+            </div>
+            <div class="item-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="item-name">{{ item.item_name }}</h3>
+                    <span class="item-status status-{{ item.status }}">{{ '已找到' if item.status == 'found' else '丢失中' }}</span>
+                </div>
+                <span class="item-type">{{ item.item_type }}</span>
+                <p class="item-desc">{{ item.description }}</p>
+                <div class="item-meta">
+                    <span>📍 {{ item.location }}</span>
+                    <span>🕐 {{ item.report_time }}</span>
+                </div>
+                <div style="margin-top: 15px;">
+                    <a href="{{ url_for('items.detail', item_id=item.item_id) }}" class="btn btn-primary" style="width: 100%;">查看详情</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+        <p style="font-size: 18px; color: #999999;">未找到相关失物信息</p>
+        <a href="{{ url_for('items.post') }}" class="btn btn-primary" style="margin-top: 20px;">发布失物信息</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

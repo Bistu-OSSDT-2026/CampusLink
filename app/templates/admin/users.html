@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}用户管理 - 校园失物招领平台{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <div class="sidebar">
+        <h3 style="font-size: 16px; font-weight: bold; color: #5D3A1A; margin-bottom: 20px; padding-left: 10px;">管理菜单</h3>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">📊 数据概览</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link active">👥 用户管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.items') }}" class="sidebar-link">📦 物品管理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">🚨 举报处理</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.stats') }}" class="sidebar-link">📈 统计图表</a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">👥 用户管理</h2>
+                <span class="badge badge-orange">{{ users|length }} 位用户</span>
+            </div>
+            
+            <table style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left;">
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">用户名</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">昵称</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">邮箱</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">身份</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #FFE4CC;">注册时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td style="padding: 10px;">{{ user.username }}</td>
+                        <td style="padding: 10px;">{{ user.nickname or '-' }}</td>
+                        <td style="padding: 10px;">{{ user.email }}</td>
+                        <td style="padding: 10px;">
+                            <span class="badge {% if user.is_loser() %}badge-orange{% elif user.is_finder() %}badge-green{% else %}badge-red{% endif %}">
+                                {% if user.is_loser() %}丢失者{% elif user.is_finder() %}捡拾者{% else %}管理员{% endif %}
+                            </span>
+                        </td>
+                        <td style="padding: 10px;">{{ user.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+data/lost_items.json
+.DS_Store
+.idea/
+.vscode/
